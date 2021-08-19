@@ -8,4 +8,4 @@ analysis/figures/ - contains all plots and figures
 
 src/ - R and python scripts for data processing
 
-data/ - Ccontains raw data of simulated proteins and CNN output
+data/ - Contains raw data of simulated proteins and CNN output
