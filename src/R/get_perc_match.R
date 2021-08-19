@@ -52,7 +52,6 @@ with_freq <- mutation_sites %>%
 # plots
 line_plot <- with_freq %>%
   ggplot(aes(x = as.numeric(mutations),
-             #x = fct_relevel(mutations, "100", "200", "300", "400", "500", "600", "700", "800", "900", "1000", "1100", "1200", "1300", "1400", "1500"), 
              y = freq, 
              color = factor(round))) +
   scale_x_continuous(
@@ -65,9 +64,9 @@ line_plot <- with_freq %>%
     name = "frequency",
     limits = c(0.0, 1.0),
     breaks = seq(0.0, 1.0, by = 0.2),
-    expand = c(0,0)) +
+    expand = c(0.03,0.03)) +
   labs(color = "trajectory") +
-  ggtitle("Frequency of original mispredicted positions that been mutated in simulation \n")+
+  ggtitle("Frequency of original mispredicted positions that have been mutated in simulation \n")+
   geom_line(size = 0.5) +
   theme_cowplot() +
   theme(
@@ -82,4 +81,38 @@ ggsave(filename = paste("./analysis/figures/test_data.png"), plot = line_plot, w
 
 
 #now, get the mean of all trajectories and compare to random chance at each step. 
+
+means <- with_freq %>%
+  select(c(mutations, freq)) %>%
+  group_by(mutations) %>%
+  summarise(mean = mean(freq))
+
+# plots
+line_plot_means <- means %>%
+  ggplot(aes(x = as.numeric(mutations),
+             y = mean)) +
+  scale_x_continuous(
+    name = "number of mutations",
+    limits = c(100, 1500),
+    breaks = seq(100, 1500, by = 100),
+    expand = c(0.03,0.03)
+  ) +
+  scale_y_continuous(
+    name = "mean frequency",
+    limits = c(0.0, 1.0),
+    breaks = seq(0.0, 1.0, by = 0.2),
+    expand = c(0,0)) +
+  ggtitle("Mean frequency of original mispredicted positions that have been mutated in simulation \n")+
+  geom_line() +
+  geom_point(size = 1.5) +
+  theme_cowplot() +
+  theme(
+    axis.text = element_text(color = "black", size = 12),
+    strip.text.x = element_text(size = 16),
+    panel.grid.major.y = element_line(color = "grey92", size=0.5),
+    panel.grid.minor.y = element_line(color = "grey92", size=0.5),
+    panel.spacing = unit(2, "lines"))
+
+line_plot_means
+ggsave(filename = paste("./analysis/figures/test_data_mean.png"), plot = line_plot_means, width = 10, height = 4.5)
 
