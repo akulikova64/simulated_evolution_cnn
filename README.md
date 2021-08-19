@@ -1,6 +1,6 @@
 # simulated_evolution_cnn
 
-## This repository contains all code, analysis and both unprocessed and processed data.
+## This repository contains all code, analysis and both raw and processed data.
 
 output/ - processed cnn and simulated data
 
