@@ -101,61 +101,60 @@ def get_class_freq_2(wt_aa, line):
   return aa_class, class_freq
 
 #--------------- main ----------------------------
-box_size_list = ["12", "20", "30", "40"]
 
-for box_size in box_size_list:
-  input_path = "../../data/cnn_output/"
-  output_path = "../../output//cnn_wt_max_freq_test.csv"
 
-  fileList = os.listdir(input_path)
-  # old: aaList = ['H', 'E', 'D',  'R', 'K', 'S', 'T', 'N', 'Q', 'A', 'V', 'L', 'I', 'M', 'F', 'Y', 'W', 'P', 'G', 'C']
-  aaList = ['A', 'R', 'N', 'D', 'C', 'Q', 'E', 'G', 'H', 'I', 'L', 'K', 'M', 'F', 'P', 'S', 'T', 'W', 'Y', 'V']
-  aaCodes = {'ALA':'A', 'ARG':'R', 'ASN':'N', 'ASP':'D', 'CYS':'C', 'GLN':'Q', 'GLU':'E', 'GLY':'G', 'HIS':'H', 'ILE':'I', 'LEU':'L', 'LYS':'K', 'MET':'M', 'PHE':'F', 'PRO':'P', 'SER':'S', 'THR':'T','TRP':'W', 'TYR':'Y', 'VAL':'V'}
+input_path = "../../data/wt_cnn_output/"
+output_path = "../../output//cnn_wt_max_freq_test_wt.csv"
 
-  with open(output_path, "w", newline='\n', encoding='utf-8') as CSV_file:
-    writer = csv.writer(CSV_file)
-    writer.writerow(['gene', 'group', 'position', 'mutations', 'round', 'aa', 'freq'])
+fileList = os.listdir(input_path)
+# old: aaList = ['H', 'E', 'D',  'R', 'K', 'S', 'T', 'N', 'Q', 'A', 'V', 'L', 'I', 'M', 'F', 'Y', 'W', 'P', 'G', 'C']
+aaList = ['A', 'R', 'N', 'D', 'C', 'Q', 'E', 'G', 'H', 'I', 'L', 'K', 'M', 'F', 'P', 'S', 'T', 'W', 'Y', 'V']
+aaCodes = {'ALA':'A', 'ARG':'R', 'ASN':'N', 'ASP':'D', 'CYS':'C', 'GLN':'Q', 'GLU':'E', 'GLY':'G', 'HIS':'H', 'ILE':'I', 'LEU':'L', 'LYS':'K', 'MET':'M', 'PHE':'F', 'PRO':'P', 'SER':'S', 'THR':'T','TRP':'W', 'TYR':'Y', 'VAL':'V'}
 
-    for file in fileList:
-      with open(input_path + file, 'r') as openedFile: # input is CNN output file
-        lines = [line.rstrip('\n') for line in openedFile]
-      #remove header 
-      for i in range(len(lines)):
-        lines[i] = lines[i].split(",")
-      header = lines[0] 
-      del lines[0]
-      # old: structure of "line" in lines:
-      #pos wt_aa HIS GLU ASP ARG LYS SER THR ASN GLN ALA VAL LEU ILE MET PHE TYR TRP PRO GLY CYS
-      # 0     1    2  3   4   5   6   7   8   9   10  11  12  13  14  15  16  17  18  19  20  21
+with open(output_path, "w", newline='\n', encoding='utf-8') as CSV_file:
+  writer = csv.writer(CSV_file)
+  writer.writerow(['gene', 'group', 'position', 'aa', 'freq'])
 
-      # new (correct) structure of "line" in lines:
-      #pos, aa_id, pdb_id, chain_id, pos, wtAA, prAA, wt_prob, pred_prob, avg_log_ratio, prALA, prARG, prASN, prASP, prCYS,prGLN,prGLU,prGLY,prHIS,prILE,prLEU,prLYS,prMET,prPHE,prPRO,prSER,prTHR,prTRP,prTYR,prVAL,prHydrophobic,prAromatic,prPolarUncharged,prCationic,prAnionic,prCharged,prSmall,prSulfur,prAcyl,prAlcohol
-      # 0     1      2        3       4    5     6      7          8            9         10      11     12    13     14    15    16    17   18    19    20    21     22     23    24   25    26    27    28    29      30             31         32               33        34
-      gene = str(file[0:4]).lower()
+  for file in fileList:
+    with open(input_path + file, 'r') as openedFile: # input is CNN output file
+      lines = [line.rstrip('\n') for line in openedFile]
+    #remove header 
+    for i in range(len(lines)):
+      lines[i] = lines[i].split(",")
+    header = lines[0] 
+    del lines[0]
+    # old: structure of "line" in lines:
+    #pos wt_aa HIS GLU ASP ARG LYS SER THR ASN GLN ALA VAL LEU ILE MET PHE TYR TRP PRO GLY CYS
+    # 0     1    2  3   4   5   6   7   8   9   10  11  12  13  14  15  16  17  18  19  20  21
 
-      for line in lines:
+    # new (correct) structure of "line" in lines:
+    #pos, aa_id, pdb_id, chain_id, pos, wtAA, prAA, wt_prob, pred_prob, avg_log_ratio, prALA, prARG, prASN, prASP, prCYS,prGLN,prGLU,prGLY,prHIS,prILE,prLEU,prLYS,prMET,prPHE,prPRO,prSER,prTHR,prTRP,prTYR,prVAL,prHydrophobic,prAromatic,prPolarUncharged,prCationic,prAnionic,prCharged,prSmall,prSulfur,prAcyl,prAlcohol
+    # 0     1      2        3       4    5     6      7          8            9         10      11     12    13     14    15    16    17   18    19    20    21     22     23    24   25    26    27    28    29      30             31         32               33        34
+    gene = str(file[0:4]).lower()
 
-        position = str(int(line[0]) + 1)
-        # add predicted row
-        group = "predicted"
-        #position = str(line[0])
-        #res = findMax(line)
-        #aa = aaList[res[0] - 2]
-        aa = aaCodes[str(line[6])]
-        freq = str(line[8])
-        #aa_class, class_freq = get_class_freq(line)
-        writer.writerow([gene, group, position, aa, freq])
+    for line in lines:
 
-        # add wt row
-        group = "sim_wt"
-        # old : wt_aa = aaList[ header.index( line[1] ) - 2 ]
-        wt_aa = aaCodes[str(line[5])]
-        # old : freq = line[ header.index( line[1] ) ]
-        freq = str(line[7])
-        #wt_aa_class, wt_class_freq = get_class_freq_2(wt_aa, line)
-        writer.writerow([gene, group, position, wt_aa, freq])
+      position = str(int(line[0]) + 1)
+      # add predicted row
+      group = "predicted"
+      #position = str(line[0])
+      #res = findMax(line)
+      #aa = aaList[res[0] - 2]
+      aa = aaCodes[str(line[6])]
+      freq = str(line[8])
+      #aa_class, class_freq = get_class_freq(line)
+      writer.writerow([gene, group, position, aa, freq])
 
-        #sys.exit()
-      #print(lines)
+      # add wt row
+      group = "wt"
+      # old : wt_aa = aaList[ header.index( line[1] ) - 2 ]
+      wt_aa = aaCodes[str(line[5])]
+      # old : freq = line[ header.index( line[1] ) ]
+      freq = str(line[7])
+      #wt_aa_class, wt_class_freq = get_class_freq_2(wt_aa, line)
+      writer.writerow([gene, group, position, wt_aa, freq])
+
       #sys.exit()
+    #print(lines)
+    #sys.exit()
 
