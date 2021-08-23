@@ -27,11 +27,15 @@ all_data <- left_join(sim_data_wide, wt_data_wide)
 all_data_filtered <- all_data %>%
   filter(aa_predicted != aa_wt)
 
-all_data_filtered$mutations<-as.character(all_data_filtered$mutations)
-all_data_filtered$round<-as.character(all_data_filtered$round)
+# now make sure that the mispredictions are confident (non wt amino acids >0.8 % conf)
+all_data_filtered2 <- all_data_filtered %>%
+  filter(freq_predicted >= 0.8)
+
+# all_data_filtered2$mutations<-as.character(all_data_filtered$mutations)
+# all_data_filtered2$round<-as.character(all_data_filtered$round)
 
 #calculating the total number of original mispredictions per round and mutations. 
-with_total <- all_data_filtered %>%
+with_total <- all_data_filtered2 %>%
   group_by(mutations, round) %>%
   mutate(total = n()) %>%
   ungroup()
@@ -58,15 +62,15 @@ line_plot <- with_freq %>%
     name = "number of mutations",
     limits = c(100, 1500),
     breaks = seq(100, 1500, by = 100),
-    expand = c(0,0)
+    expand = c(0.03,0.03)
     ) +
   scale_y_continuous(
     name = "frequency",
     limits = c(0.0, 1.0),
-    breaks = seq(0.0, 1.0, by = 0.2),
-    expand = c(0.03,0.03)) +
+    breaks = seq(0.0, 1.0, by = 0.2)
+    ) +
   labs(color = "trajectory") +
-  ggtitle("Frequency of original mispredicted positions that have been mutated in simulation \n")+
+  ggtitle("Frequency of original mispredicted positions that have been mutated in simulation \n (predicted probability >= 0.8, 6 mispred.)")+
   geom_line(size = 0.5) +
   theme_cowplot() +
   theme(
@@ -77,7 +81,7 @@ line_plot <- with_freq %>%
     panel.spacing = unit(2, "lines"))
   
 line_plot
-ggsave(filename = paste("./analysis/figures/test_data.png"), plot = line_plot, width = 10, height = 4.5)
+ggsave(filename = paste("./analysis/figures/test_data2.png"), plot = line_plot, width = 10, height = 4.5)
 
 
 #now, get the mean of all trajectories and compare to random chance at each step. 
@@ -102,7 +106,7 @@ line_plot_means <- means %>%
     limits = c(0.0, 1.0),
     breaks = seq(0.0, 1.0, by = 0.2),
     expand = c(0,0)) +
-  ggtitle("Mean frequency of original mispredicted positions that have been mutated in simulation \n")+
+  ggtitle("Mean frequency of original mispredicted positions that have been mutated in simulation \n (predicted probability >= 0.8, 6 mispred.)")+
   geom_line() +
   geom_point(size = 1.5) +
   theme_cowplot() +
@@ -114,5 +118,5 @@ line_plot_means <- means %>%
     panel.spacing = unit(2, "lines"))
 
 line_plot_means
-ggsave(filename = paste("./analysis/figures/test_data_mean.png"), plot = line_plot_means, width = 10, height = 4.5)
+ggsave(filename = paste("./analysis/figures/test_data_mean2.png"), plot = line_plot_means, width = 10, height = 4.5)
 
