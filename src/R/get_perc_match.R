@@ -27,9 +27,9 @@ all_data <- left_join(sim_data_wide, wt_data_wide)
 all_data_filtered <- all_data %>%
   filter(aa_predicted != aa_wt)
 
-# now make sure that the mispredictions are confident (non wt amino acids >0.8 % conf)
+# now make sure that the mispredictions are confident (non wt amino acids >0.7 % conf)
 all_data_filtered2 <- all_data_filtered %>%
-  filter(freq_predicted >= 0.8)
+  filter(freq_predicted >= 0.7)
 
 # all_data_filtered2$mutations<-as.character(all_data_filtered$mutations)
 # all_data_filtered2$round<-as.character(all_data_filtered$round)
@@ -70,7 +70,7 @@ line_plot <- with_freq %>%
     breaks = seq(0.0, 1.0, by = 0.2)
     ) +
   labs(color = "trajectory") +
-  ggtitle("Frequency of original mispredicted positions that have been mutated in simulation \n (predicted probability >= 0.8, 6 mispred.)")+
+  ggtitle("Frequency of original mispredicted positions that have been mutated in simulation \n (predicted probability >= 0.7, 9 mispred.)")+
   geom_line(size = 0.5) +
   theme_cowplot() +
   theme(
@@ -81,7 +81,7 @@ line_plot <- with_freq %>%
     panel.spacing = unit(2, "lines"))
   
 line_plot
-ggsave(filename = paste("./analysis/figures/test_data2.png"), plot = line_plot, width = 10, height = 4.5)
+#ggsave(filename = paste("./analysis/figures/test_data2.png"), plot = line_plot, width = 10, height = 4.5)
 
 
 #now, get the mean of all trajectories and compare to random chance at each step. 
@@ -106,7 +106,7 @@ line_plot_means <- means %>%
     limits = c(0.0, 1.0),
     breaks = seq(0.0, 1.0, by = 0.2),
     expand = c(0,0)) +
-  ggtitle("Mean frequency of original mispredicted positions that have been mutated in simulation \n (predicted probability >= 0.8, 6 mispred.)")+
+  ggtitle("Mean frequency of original mispredicted positions that have been mutated in simulation \n (predicted probability >= 0.7, 9 mispred.)")+
   geom_line() +
   geom_point(size = 1.5) +
   theme_cowplot() +
@@ -118,5 +118,96 @@ line_plot_means <- means %>%
     panel.spacing = unit(2, "lines"))
 
 line_plot_means
-ggsave(filename = paste("./analysis/figures/test_data_mean2.png"), plot = line_plot_means, width = 10, height = 4.5)
+#ggsave(filename = paste("./analysis/figures/test_data_mean2.png"), plot = line_plot_means, width = 10, height = 4.5)
 
+#----------------------------------------------------------------------------------------------
+# now I need to do fisher's exact test:
+
+# syntax:
+# test <- fisher.test(table(data$variable1, data$variable2))
+
+
+#--------------------------------------------------------------------------------------------------------
+# comparing the previous step to current step. 
+# (looking at local mispredictions only and )
+
+# reorganize table so that previous simulation aa is in a separate column:
+temp_table <- all_data %>%
+  select(c(position, round, mutations, aa_sim_wt)) %>%
+  mutate(new_mutations = mutations + 100) %>%
+  filter(new_mutations != 1600) %>%
+  rename(prev_aa_sim_wt = aa_sim_wt) %>%
+  select(-mutations) %>%
+  rename(mutations = new_mutations)
+
+new_data <- left_join(all_data, temp_table)
+
+new_data$prev_aa_sim_wt <- ifelse(is.na(new_data$prev_aa_sim_wt), new_data$aa_wt, new_data$prev_aa_sim_wt)
+
+clean_data <- new_data %>%
+  select(-c(freq_predicted, freq_sim_wt, freq_wt))
+
+# get the mispredictions at each step:
+all_data_filtered <- clean_data %>%
+  filter(aa_sim_predicted != aa_sim_wt)
+
+# now make sure that the mispredictions are confident (non wt amino acids >0.7 % conf)
+all_data_filtered2 <- all_data_filtered %>%
+  filter(freq_sim_predicted >= 0.7)
+
+# all_data_filtered2$mutations<-as.character(all_data_filtered$mutations)
+# all_data_filtered2$round<-as.character(all_data_filtered$round)
+
+#calculating the total number of mispredictions per round and mutations. 
+with_total <- all_data_filtered2 %>%
+  group_by(mutations, round) %>%
+  mutate(total = n()) %>%
+  ungroup()
+
+# find the positions where the Rosetta aa is not the amino acid from the previous round:
+mutation_sites <- with_total %>%
+  filter(aa_sim_wt != prev_aa_sim_wt) %>%
+  group_by(mutations, round) %>%
+  mutate(mutated_sites = n()) %>%
+  ungroup()
+
+
+# get the frequency at which the mutated sites correspond to the original mismatches.
+with_freq <- mutation_sites %>%
+  select(c(mutations, round, mutated_sites, total)) %>%
+  unique() %>%
+  mutate(freq = mutated_sites/total)
+
+means <- with_freq %>%
+  select(c(mutations, freq)) %>%
+  group_by(mutations) %>%
+  summarise(mean = mean(freq))
+
+# plots
+line_plot_means <- means %>%
+  ggplot(aes(x = as.numeric(mutations),
+             y = mean)) +
+  scale_x_continuous(
+    name = "number of mutations",
+    limits = c(100, 1500),
+    breaks = seq(100, 1500, by = 100),
+    expand = c(0.03,0.03)
+  ) +
+  scale_y_continuous(
+    name = "mean frequency",
+    limits = c(0.0, 1.0),
+    breaks = seq(0.0, 1.0, by = 0.2),
+    expand = c(0,0)) +
+  ggtitle("Mean frequency of mispredicted positions that have been mutated since last structure \n (predicted probability >= 0.7, 20 mispred.)")+
+  geom_line() +
+  geom_point(size = 1.5) +
+  theme_cowplot() +
+  theme(
+    axis.text = element_text(color = "black", size = 12),
+    strip.text.x = element_text(size = 16),
+    panel.grid.major.y = element_line(color = "grey92", size=0.5),
+    panel.grid.minor.y = element_line(color = "grey92", size=0.5),
+    panel.spacing = unit(2, "lines"))
+
+line_plot_means
+ggsave(filename = paste("./analysis/figures/test_data_sequential_70.png"), plot = line_plot_means, width = 10, height = 4.5)
