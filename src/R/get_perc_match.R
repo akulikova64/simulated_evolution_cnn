@@ -12,7 +12,6 @@ library(colorspace)
 sim_data <- read.csv(file = "./output/cnn_wt_max_freq_test.csv", header=TRUE, sep=",")
 wt_data <- read.csv(file = "./output/cnn_wt_max_freq_test_wt.csv", header=TRUE, sep=",")
 
-
 sim_data_wide <- sim_data %>%
   pivot_wider(names_from = group, values_from = c(aa, freq)) %>%
   rename(aa_sim_predicted = aa_predicted,
@@ -120,13 +119,7 @@ line_plot_means <- means %>%
 line_plot_means
 #ggsave(filename = paste("./analysis/figures/test_data_mean2.png"), plot = line_plot_means, width = 10, height = 4.5)
 
-#----------------------------------------------------------------------------------------------
-# now I need to do fisher's exact test:
-
-# syntax:
-# test <- fisher.test(table(data$variable1, data$variable2))
-
-
+#--------------------------------------------------------------------------------------------------------
 #--------------------------------------------------------------------------------------------------------
 # comparing the previous step to current step. 
 # (looking at local mispredictions only and )
@@ -153,7 +146,7 @@ all_data_filtered <- clean_data %>%
 
 # now make sure that the mispredictions are confident (non wt amino acids >0.7 % conf)
 all_data_filtered2 <- all_data_filtered %>%
-  filter(freq_sim_predicted >= 0.7)
+  filter(freq_sim_predicted >= 0.95)
 
 # all_data_filtered2$mutations<-as.character(all_data_filtered$mutations)
 # all_data_filtered2$round<-as.character(all_data_filtered$round)
@@ -172,7 +165,7 @@ mutation_sites <- with_total %>%
   ungroup()
 
 
-# get the frequency at which the mutated sites correspond to the original mismatches.
+# get the frequency at which the mutated sites correspond to the mismatches.
 with_freq <- mutation_sites %>%
   select(c(mutations, round, mutated_sites, total)) %>%
   unique() %>%
@@ -198,9 +191,13 @@ line_plot_means <- means %>%
     limits = c(0.0, 1.0),
     breaks = seq(0.0, 1.0, by = 0.2),
     expand = c(0,0)) +
-  ggtitle("Mean frequency of mispredicted positions that have been mutated since last structure \n (predicted probability >= 0.7, 20 mispred.)")+
+  ggtitle("Mean frequency of mispredicted positions that have been mutated since last structure \n (predicted probability >= 0.95 (2-13 mispred))")+
   geom_line() +
   geom_point(size = 1.5) +
+  geom_hline(yintercept =  0.54347, 
+             color = "red", 
+             linetype = 'dotted',
+             size = 0.75) +
   theme_cowplot() +
   theme(
     axis.text = element_text(color = "black", size = 12),
@@ -210,4 +207,18 @@ line_plot_means <- means %>%
     panel.spacing = unit(2, "lines"))
 
 line_plot_means
-ggsave(filename = paste("./analysis/figures/test_data_sequential_70.png"), plot = line_plot_means, width = 10, height = 4.5)
+ggsave(filename = paste("./analysis/figures/test_data_sequential_95.png"), plot = line_plot_means, width = 10, height = 4.5)
+
+#----------------------------------------------------------------------------------------------
+# now I need to do fisher's exact test:
+# syntax:
+# test <- fisher.test(table(data$variable1, data$variable2))
+
+for_fisher <- with_freq %>%
+  mutate(random = (100/184)) %>%
+  select(c(freq, random))
+
+test <- fisher.test(x = for_fisher)
+  
+test
+
