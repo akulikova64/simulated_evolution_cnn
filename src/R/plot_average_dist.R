@@ -38,14 +38,14 @@ data_summary <- function(x) {
   return(c(y=m,ymin=ymin,ymax=ymax))
 }
 
-custom_fills <- c("#8c7b9d", "#d2a92d")
-custom_colors <- c("#655775", "#8a7228")
+custom_fills <- c("#0b967d", "#a63573")
+custom_colors <- c("#116657", "#591239")
 
 plot <- longer %>%
   ggplot(aes(y = distance, x = group, fill = group, color = group)) +
   geom_violin(
     alpha = 0.5, 
-    size = 0.7,
+    size = 0.5,
     position=position_dodge(width = 0.8)) +
   stat_summary(
     fun.data=data_summary,
@@ -69,7 +69,7 @@ plot <- longer %>%
   scale_fill_manual(values = custom_fills) +
   scale_color_manual(values = custom_colors) +
   scale_y_continuous(
-    name = "mean distance between residues \n (per protein)",
+    name = "mean distance between residues \n in Å (per protein)",
     limits = c(0.0, 30),
     breaks = seq(0, 30, by = 5),
     expand = c(0, 0)) +
@@ -79,4 +79,4 @@ plot <- longer %>%
 
 plot
 
-ggsave(filename = "./analysis/figures/distance_bw_res.png", plot = plot, width = 4, height = 3)
+ggsave(filename = "./analysis/figures/distance_bw_res.png", plot = plot, width = 5, height = 4)
