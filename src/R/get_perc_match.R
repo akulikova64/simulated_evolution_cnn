@@ -371,9 +371,9 @@ bar_plot
 ggsave(filename = paste("./analysis/figures/test_data_accuracy.png"), plot = bar_plot, width = 10, height = 4.5)
 
 # plots
-bar_plot2 <- stats_1 %>%
+point_plot <- mean_acc %>%
   ggplot(aes(x = mutations,
-             y = freq_predict_wt)) +
+             y = mean)) +
   scale_x_continuous(
     name = "number of mutations",
     limits = c(100, 1500),
@@ -385,8 +385,9 @@ bar_plot2 <- stats_1 %>%
     limits = c(0.0, 1.0),
     breaks = seq(0.0, 1.0, by = 0.2),
     expand = c(0,0)) +
-  ggtitle("CNN accuracy in predicting the simulated structures \n")+
-  geom_col(position = position_dodge()) +
+  ggtitle("Mean CNN accuracy in predicting the simulated structures \n")+
+  geom_line() +
+  geom_point(size = 1.5) +
   labs(fill = "trajectory") +
   theme_cowplot() +
   theme(
@@ -396,7 +397,7 @@ bar_plot2 <- stats_1 %>%
     panel.grid.minor.y = element_line(color = "grey92", size=0.5),
     panel.spacing = unit(2, "lines"))
 
-bar_plot
+point_plot
 
-ggsave(filename = paste("./analysis/figures/test_data_accuracy_mean.png"), plot = bar_plot2, width = 10, height = 4.5)
+ggsave(filename = paste("./analysis/figures/test_data_accuracy_mean.png"), plot = point_plot, width = 10, height = 4.5)
 
