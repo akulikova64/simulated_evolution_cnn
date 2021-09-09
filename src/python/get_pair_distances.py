@@ -34,11 +34,11 @@ geneList = os.listdir("../../data/pdb/")
 
 
 # getting misprediction distances
-with open(output_path_1, "w", newline='\n', encoding='utf-8') as CSV_file:
+with open(output_path_2, "w", newline='\n', encoding='utf-8') as CSV_file:
   writer = csv.writer(CSV_file)
   writer.writerow(['gene', 'position_1', 'position_2', 'aa_1', 'aa_2', 'distance'])
 
-  with open(input_path_1, newline='') as csvfile:
+  with open(input_path_2, newline='') as csvfile:
     reader1 = list(csv.reader(csvfile, delimiter=','))
     reader2 = reader1
 

@@ -18,6 +18,7 @@ coord_data2$position<-as.numeric(coord_data2$position)
 
 wt_data <- read.csv(file = "./output/cnn_wt_max_freq_all.csv", header=TRUE, sep=",")
 
+
 wt_data_wide <- wt_data %>%
   select(-c(aa_class, class_freq)) %>%
   pivot_wider(names_from = group, values_from = c(aa, freq)) 
